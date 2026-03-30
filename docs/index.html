@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Техническое задание — Википедия (с поиском по программам)</title>
+    <style>
+        /* ---------- CSS-переменные (светлая тема Википедии) ---------- */
+        :root {
+            --bg-page: #f6f6f6;
+            --bg-base: #ffffff;
+            --bg-neutral-subtle: #f8f9fa;
+            --bg-interactive-subtle: #f8f9fa;
+            --bg-interactive-hover: #eaecf0;
+            --bg-progressive-subtle: #e8eeff;
+            --border-color-base: #a2a9b1;
+            --border-color-subtle: #c8ccd1;
+            --border-color-interactive: #72777d;
+            --color-base: #202122;
+            --color-subtle: #54595d;
+            --color-progressive: #36c;
+            --color-progressive-hover: #447ff5;
+            --color-destructive: #bf3c2c;
+            --font-family-serif: 'Linux Libertine', 'Georgia', 'Times', 'Source Serif Pro', serif;
+            --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', 'Helvetica', 'Arial', sans-serif;
+            --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--color-base);
+            font-family: var(--font-family-sans);
+            line-height: 1.5;
+            font-size: 0.875rem;
+        }
+
+        a {
+            color: var(--color-progressive);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* ---------- Шапка ---------- */
+        .vector-header-container {
+            background-color: var(--bg-base);
+            border-bottom: 1px solid var(--border-color-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .vector-header {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 3.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .vector-header-start {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 2px;
+            font-size: 1.25rem;
+            color: var(--color-base);
+        }
+
+        .menu-button:hover {
+            background-color: var(--bg-interactive-hover);
+        }
+
+        .mw-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .mw-logo-icon {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .mw-logo-wordmark {
+            height: 1.25rem;
+        }
+
+        .mw-logo-tagline {
+            height: 0.75rem;
+        }
+
+        .vector-search-box {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-form {
+            display: flex;
+            width: 100%;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.4rem 0.75rem 0.4rem 2rem;
+            border: 1px solid var(--border-color-interactive);
+            border-radius: 2px 0 0 2px;
+            font-size: 0.875rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-progressive);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-subtle);
+            font-style: normal;
+        }
+
+        .search-button {
+            background-color: var(--bg-interactive-subtle);
+            border: 1px solid var(--border-color-interactive);
+            border-left: none;
+            border-radius: 0 2px 2px 0;
+            padding: 0.4rem 0.75rem;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: var(--bg-interactive-hover);
+        }
+
+        .vector-header-end {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 2px;
+            font-size: 1rem;
+        }
+
+        .icon-button:hover {
+            background-color: var(--bg-interactive-hover);
+        }
+
+        /* ---------- Основной контейнер ---------- */
+        .mw-page-container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Вкладки навигации */
+        .vector-page-toolbar {
+            border-bottom: 1px solid var(--border-color-subtle);
+            margin-bottom: 1rem;
+        }
+
+        .vector-page-toolbar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .vector-tabs {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+        }
+
+        .vector-tab {
+            padding: 0.75rem 0.5rem 0.5rem;
+            border-bottom: 2px solid transparent;
+        }
+
+        .vector-tab.selected {
+            border-bottom-color: var(--color-progressive);
+        }
+
+        .vector-tab a {
+            color: var(--color-base);
+        }
+
+        .vector-tab.selected a {
+            color: var(--color-progressive);
+            font-weight: bold;
+        }
+
+        /* Основная статья */
+        .mw-body {
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color-subtle);
+            border-radius: 2px;
+            padding: 1.5rem;
+        }
+
+        .mw-body-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color-subtle);
+            padding-bottom: 0.5rem;
+        }
+
+        .firstHeading {
+            font-family: var(--font-family-serif);
+            font-size: 1.8rem;
+            font-weight: normal;
+            margin: 0;
+        }
+
+        /* Содержимое статьи */
+        .vector-body {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .vector-body p {
+            margin: 0.75rem 0;
+        }
+
+        .vector-body h2 {
+            font-family: var(--font-family-serif);
+            font-size: 1.5rem;
+            font-weight: normal;
+            border-bottom: 1px solid var(--border-color-subtle);
+            margin: 1.5rem 0 0.75rem;
+            padding-bottom: 0.25rem;
+        }
+
+        .vector-body h3 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .vector-body ul, .vector-body ol {
+            margin: 0.5rem 0 0.5rem 2rem;
+        }
+
+        .vector-body li {
+            margin-bottom: 0.25rem;
+        }
+
+        .reflist {
+            list-style-type: decimal;
+            margin-left: 1.5rem;
+        }
+
+        .reflist li {
+            margin-bottom: 0.5rem;
+        }
+
+        .reflist cite {
+            word-break: break-word;
+        }
+
+        .reflist a.external {
+            word-break: break-all;
+        }
+
+        /* Сноски */
+        .reference {
+            font-size: 0.8rem;
+            vertical-align: super;
+            line-height: 1;
+        }
+
+        /* Категории внизу */
+        .catlinks {
+            border: 1px solid var(--border-color-subtle);
+            background-color: var(--bg-neutral-subtle);
+            padding: 0.5rem;
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+        }
+
+        .catlinks ul {
+            display: inline;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .catlinks li {
+            display: inline;
+            margin-right: 0.5rem;
+        }
+
+        .catlinks li:after {
+            content: "•";
+            margin-left: 0.5rem;
+            color: var(--border-color-base);
+        }
+
+        .catlinks li:last-child:after {
+            content: "";
+        }
+
+        /* Блок результатов поиска (программные ТЗ, руководства, тестирование) */
+        .search-results-section {
+            margin-top: 2rem;
+            border-top: 2px solid var(--border-color-subtle);
+            padding-top: 1rem;
+        }
+
+        .search-results-section h2 {
+            font-family: var(--font-family-serif);
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-card {
+            background: var(--bg-neutral-subtle);
+            border-left: 4px solid var(--color-progressive);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .result-card h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            color: var(--color-progressive);
+        }
+
+        .result-card p {
+            margin: 0.5rem 0;
+        }
+
+        .result-card strong {
+            color: var(--color-base);
+        }
+
+        .no-results {
+            background: var(--bg-interactive-subtle);
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            color: var(--color-destructive);
+        }
+
+        /* Футер */
+        .mw-footer {
+            margin-top: 2rem;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--border-color-subtle);
+            font-size: 0.75rem;
+            color: var(--color-subtle);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .footer-info, .footer-places, .footer-icons {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-info li {
+            width: 100%;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .vector-header {
+                flex-direction: column;
+                height: auto;
+                padding: 0.5rem;
+            }
+            .vector-search-box {
+                width: 100%;
+                max-width: none;
+                order: 3;
+            }
+            .vector-page-toolbar-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .mw-body {
+                padding: 1rem;
+            }
+            .firstHeading {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Шапка -->
+    <div class="vector-header-container">
+        <header class="vector-header">
+            <div class="vector-header-start">
+                <button class="menu-button" aria-label="Главное меню">☰</button>
+                <a href="#" class="mw-logo">
+                   <img class="mw-logo-icon" src="logo.svg" alt="Логотип">
+                    <span class="mw-logo-container">
+                        <img class="mw-logo-wordmark" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 20'%3E%3Ctext x='0' y='15' font-family='Georgia' font-size='16' fill='%23202122'%3EВикипедия%3C/text%3E%3C/svg%3E" alt="Википедия">
+                        <img class="mw-logo-tagline" src="logo.svg" alt="свободная энциклопедия">
+                    </span>
+                </a>
+            </div>
+            <div class="vector-search-box">
+                <form class="search-form" id="wikiSearchForm">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon"></span>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Искать в Википедии">
+                    </div>
+                    <button type="submit" class="search-button" id="searchButton">Найти</button>
+                </form>
+            </div>
+            <div class="vector-header-end">
+                <button class="icon-button"></button>
+                <button class="icon-button"></button>
+            </div>
+        </header>
+    </div>
+
+    <div class="mw-page-container">
+        <!-- Вкладки -->
+        <div class="vector-page-toolbar">
+            <div class="vector-page-toolbar-container">
+                <ul class="vector-tabs">
+                    <li class="vector-tab selected"><a href="#">Статья</a></li>
+                    <li class="vector-tab"><a href="#">Обсуждение</a></li>
+                </ul>
+                <ul class="vector-tabs">
+                    <li class="vector-tab"><a href="#">Читать</a></li>
+                    <li class="vector-tab"><a href="#">Править</a></li>
+                    <li class="vector-tab"><a href="#">Править код</a></li>
+                    <li class="vector-tab"><a href="#">История</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Основная статья -->
+        <main class="mw-body" id="mw-body">
+            <header class="mw-body-header">
+                <h1 class="firstHeading">Техническое задание</h1>
+                <div class="mw-indicators"></div>
+            </header>
+
+            <div class="vector-body" id="vector-body-content">
+                <p><b>Техническое задание</b> (<b>ТЗ</b>, <b>техзадание</b>) — документ или несколько документов, определяющих цель, структуру, свойства и методы какого-либо <a href="#">проекта</a>, и исключающие двусмысленное толкование различными исполнителями<sup class="reference"><a href="#cite_note-1">[1]</a></sup><sup class="reference"><a href="#cite_note-2">[2]</a></sup>. Иными словами, техническое задание — это инструмент коммуникации между <a href="#">заказчиком</a> и <a href="#">исполнителем</a>, который помогает выстроить линию общения с помощью создания внутри него некоего абстрактного элемента, наделенного видением, чувствами и знаниями заказчика<sup class="reference"><a href="#cite_note-3">[3]</a></sup>.</p>
+
+                <p>Техническое задание создается на ранних этапах проекта после утверждения его <a href="#">экономического обоснования</a>. Оно предшествует подписанию договора и его основная функция заключается в информировании заказчика о характеристиках проекта (услуги или продукта), формировании основы для принятия будущих решений<sup class="reference"><a href="#cite_note-4">[4]</a></sup> и создания объективных критериев, по которым можно определить степень и качество исполнения того или иного пункта работ<sup class="reference"><a href="#cite_note-3">[3]</a></sup>. Для выполнения этих критериев техническое задание содержит и определяет:</p>
+
+                <ul>
+                    <li>видение проекта, цели, результаты (что должно быть достигнуто);</li>
+                    <li>участвующие стороны, их роли и обязанности (кто будет принимать участие);</li>
+                    <li>потребности в ресурсах и финансах (за счёт чего будет достигнуто);</li>
+                    <li><a href="#">иерархическую структуру работ</a> и график выполнения (когда будет выполнено)<sup class="reference"><a href="#cite_note-5">[5]</a></sup>.</li>
+                </ul>
+
+                <p>Помимо этого, техническое задание может содержать факторы успеха, возможные риски и ограничения<sup class="reference"><a href="#cite_note-6">[6]</a></sup>. После составления оно предоставляется заказчику на согласование с целью утверждения или внесения правок. Все изменения, дополнения и уточнения формулировок технического задания согласуются с заказчиком и им утверждаются<sup class="reference"><a href="#cite_note-3">[3]</a></sup>. При заключении договора техническое задание становится неотъемлемой частью договора и является в ряде случаев юридическим документом<sup class="reference"><a href="#cite_note-5">[5]</a></sup>.</p>
+
+                <h2>См. также</h2>
+                <ul>
+                    <li><a href="#">Управление проектами</a></li>
+                    <li><a href="#">Бизнес-анализ</a></li>
+                </ul>
+
+                <h2>Примечания</h2>
+                <ol class="reflist">
+                    <li id="cite_note-1">ANSI. <a href="#">PMBOK Guide, 5th Ed.</a>. — 5th. — Newtown Square, PA : Project Management Institute, 2013. — P. Section 4. — <a href="#">ISBN 978-1-935589-67-9</a>.</li>
+                    <li id="cite_note-2">Love, Arnold J. <a href="#">Internal Evaluation: Building Organizations from Within</a>. — SAGE, 1991. — Vol. 24. — P. 47. — <a href="#">ISBN 9780803932012</a>.</li>
+                    <li id="cite_note-3">↑ <a href="#"><sup>1</sup></a> <a href="#"><sup>2</sup></a> <a href="#"><sup>3</sup></a> Жукова Е.Е. Инновационные грани технического задания // Научные труды Московского гуманитарного университета. — 2020. — № 6. — <a href="#">doi:10.17805/trudy.2020.6.18</a>.</li>
+                    <li id="cite_note-4">Gary Blake and Robert W. Bly. <a href="#">The Elements of Technical Writing</a>. — New York: Macmillan Publishers, 1993. — С. 108. — <a href="#">ISBN 0020130856</a>.</li>
+                    <li id="cite_note-5">↑ <a href="#"><sup>1</sup></a> <a href="#"><sup>2</sup></a> Немеров С. <a href="#">Так что же такое «Техническое задание»?</a> // Хабр. — Дата обращения: 25.01.2023.</li>
+                    <li id="cite_note-6"><a href="#">What is a Terms of Reference?</a> // pmtips. — Дата обращения: 28.06.2017.</li>
+                </ol>
+
+                <h2>Литература</h2>
+                <ul>
+                    <li><a href="#">ГОСТ 19.201—78</a> «Единая система программной документации. Техническое задание. Требования к содержанию и оформлению»</li>
+                    <li>Хорошев А. Н. Введение в управление проектированием механических систем: Учебное пособие. — Белгород, 1999. — 372 с. — <a href="#">ISBN 5-217-00016-3</a>.</li>
+                </ul>
+
+                <!-- Категории -->
+                <div class="catlinks">
+                    <span>Категории: </span>
+                    <ul>
+                        <li><a href="#">Проектирование</a></li>
+                        <li><a href="#">Менеджмент</a></li>
+                        <li><a href="#">Управление проектами</a></li>
+                        <li><a href="#">Разработка программного обеспечения</a></li>
+                        <li><a href="#">Системная инженерия</a></li>
+                        <li><a href="#">Техническая документация</a></li>
+                    </ul>
+                </div>
+
+                <!-- Контейнер для результатов поиска по программам (будет вставлен динамически) -->
+                <div id="searchResultsContainer" class="search-results-section"></div>
+            </div>
+        </main>
+
+        <!-- Футер -->
+        <footer class="mw-footer">
+            <ul class="footer-info">
+                <li>Эта страница в последний раз была отредактирована 18 января 2025 года в 18:34.</li>
+                <li>Текст доступен по лицензии Creative Commons «С указанием авторства — С сохранением условий» (CC BY-SA).</li>
+            </ul>
+            <ul class="footer-places">
+                <li><a href="#">Политика конфиденциальности</a></li>
+                <li><a href="#">Описание Википедии</a></li>
+                <li><a href="#">Отказ от ответственности</a></li>
+                <li><a href="#">Свяжитесь с нами</a></li>
+                <li><a href="#">Мобильная версия</a></li>
+            </ul>
+            <ul class="footer-icons">
+                <li><a href="#">Фонд Викимедиа</a></li>
+                <li><a href="#">MediaWiki</a></li>
+            </ul>
+        </footer>
+    </div>
+
+    <script>
+        // ---------- База данных программ (аналог programs.js с расширенным набором) ----------
+        // Структура: ключ - имя программы (регистр не важен), объект содержит tdz, guidance, testing.
+        const programsDatabase = {};
+
+        function addProgram(name, tdz, guidance, testing) {
+            programsDatabase[name.toLowerCase()] = { 
+                tdz: tdz, 
+                guidance: guidance, 
+                testing: testing,
+                originalName: name  // сохраняем оригинальное имя для красивого вывода
+            };
+        }
+
+        // Добавляем программы согласно вашему примеру и расширяем под Chrome и другие популярные.
+        addProgram("Word", 
+            "Техническое задание на Microsoft Word: требования к текстовому процессору, поддержка форматов .doc/.docx, совместная работа, проверка орфографии и макросы.",
+            "Руководство системного программиста для Word: интеграция с OLE, работа с COM-объектами, создание надстроек VSTO, управление шаблонами и безопасность.",
+            "Тестирование MS Word: функциональное тестирование редактирования, тестирование совместимости с Windows/macOS, нагрузочное тестирование при работе с большими документами."
+        );
+
+	
+        
+        
+
+
+
+
+
+
+
+
+
+        // Поисковая функция: ищет программы, в названии которых содержится искомая подстрока (регистронезависимо)
+        function searchPrograms(query) {
+            if (!query.trim()) return [];
+            const lowerQuery = query.trim().toLowerCase();
+            const results = [];
+            for (const [key, program] of Object.entries(programsDatabase)) {
+                if (key.includes(lowerQuery) || program.originalName.toLowerCase().includes(lowerQuery)) {
+                    results.push({
+                        name: program.originalName,
+                        tdz: program.tdz,
+                        guidance: program.guidance,
+                        testing: program.testing
+                    });
+                }
+            }
+            return results;
+        }
+
+        // Рендер блоков с результатами (ТЗ, руководство, тестирование) в стиле, похожем на вики-статью
+        function renderSearchResults(query) {
+            const container = document.getElementById('searchResultsContainer');
+            if (!container) return;
+            
+            const results = searchPrograms(query);
+            
+            // Очищаем контейнер перед рендерингом
+            container.innerHTML = '';
+            
+            if (results.length === 0) {
+                if (query.trim() !== '') {
+                    container.innerHTML = `<div class="no-results"> По запросу «${escapeHtml(query)}» ничего не найдено. Попробуйте: Chrome, Word, Excel, Firefox, VSCode, Photoshop, Telegram.</div>`;
+                }
+                return;
+            }
+            
+            // Создаём заголовок раздела
+            const sectionTitle = document.createElement('h2');
+            sectionTitle.textContent = `Результаты поиска по запросу: «${escapeHtml(query)}»`;
+            container.appendChild(sectionTitle);
+            
+            // Для каждой найденной программы создаём блок с тремя подблоками
+            results.forEach(program => {
+                const programCard = document.createElement('div');
+                programCard.className = 'result-card';
+                
+                // Название программы
+                const programHeader = document.createElement('h3');
+                programHeader.textContent = program.name;
+                programCard.appendChild(programHeader);
+                
+                // Техническое задание
+                const tdzBlock = document.createElement('div');
+                tdzBlock.innerHTML = `<strong>📄 Техническое задание (ТЗ):</strong> ${escapeHtml(program.tdz)}`;
+                programCard.appendChild(tdzBlock);
+                
+                // Руководство системного программиста
+                const guidanceBlock = document.createElement('div');
+                guidanceBlock.innerHTML = `<strong>🛠️ Руководство системного программиста:</strong> ${escapeHtml(program.guidance)}`;
+                programCard.appendChild(guidanceBlock);
+                
+                // Тестирование
+                const testingBlock = document.createElement('div');
+                testingBlock.innerHTML = `<strong>🧪 Тестирование:</strong> ${escapeHtml(program.testing)}`;
+                programCard.appendChild(testingBlock);
+                
+                container.appendChild(programCard);
+            });
+            
+            // Добавляем примечание, что данные носят ознакомительный характер
+            const note = document.createElement('p');
+            note.style.fontSize = '0.85rem';
+            note.style.color = 'var(--color-subtle)';
+            note.style.marginTop = '1rem';
+            note.style.borderTop = '1px solid var(--border-color-subtle)';
+            note.style.paddingTop = '0.75rem';
+            note.innerHTML = '※ Документация представлена в формате справочной информации по программным продуктам.';
+            container.appendChild(note);
+        }
+        
+        // Простая защита от XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+        
+        // Обработчик отправки формы поиска
+        const searchForm = document.getElementById('wikiSearchForm');
+        const searchInput = document.getElementById('searchInput');
+        
+        function handleSearch(event) {
+            if (event) event.preventDefault();
+            const query = searchInput.value;
+            renderSearchResults(query);
+        }
+        
+        searchForm.addEventListener('submit', handleSearch);
+        
+        // Дополнительно: если пользователь кликает на кнопку поиска, но можно и на Enter (уже работает)
+        // Инициализация: при загрузке можно ничего не показывать, либо показать подсказку? Оставим пустым.
+        // Добавим пример подсказки "например Chrome", но не автопоиск.
+        
+        // Для удобства добавим возможность поиска по клику на кнопке "Найти" (уже есть)
+        // Также для демонстрации: если в адресной строке есть параметр ?q=... можно сразу найти.
+        const urlParams = new URLSearchParams(window.location.search);
+        const qParam = urlParams.get('q');
+        if (qParam) {
+            searchInput.value = qParam;
+            renderSearchResults(qParam);
+        }
+        
+        // Небольшой бонус: показываем приветственную подсказку в контейнере (если нет результатов, но пусто)
+        // Можно оставить пустым, чтобы не отвлекать.
+    </script>
+</body>
+</html>
